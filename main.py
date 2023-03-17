@@ -1,7 +1,11 @@
 from telebot import TeleBot
 from telebot import types
+import requests
+from bs4 import BeautifulSoup as BS
 import asyncio
-from settings import TOKEN
+from settings import TOKEN, URL_WEATHER
+
+cities = ['gorod134242-Russia-g_Moskva-Moskva','gorod148-Russia-Krasnodarskiy_kray-Sochi', 'gorod167-Russia-Primorskiy_kray-Vladivostok']
 
 bot = TeleBot(token=TOKEN)
 
@@ -24,11 +28,29 @@ def send_welcome(message):
 @bot.message_handler(content_types=['text'])
 def func(message):
     if(message.text == "Moscow"):
-        bot.send_message(message.chat.id, text="Погода в Москве")
+        r = requests.get(URL_WEATHER + cities[0])
+        print(r.status_code)
+        soup = BS(r.text, 'html.parser')
+
+        temp = soup.find('div', class_='current_data')
+        info = temp.find('img').get('title')
+        bot.send_message(message.chat.id, text=info)
     elif(message.text == "Sochi"):
-        bot.send_message(message.chat.id, text="Погода в Сочи")
+        r = requests.get(URL_WEATHER + cities[1])
+        print(r.status_code)
+        soup = BS(r.text, 'html.parser')
+
+        temp = soup.find('div', class_='current_data')
+        info = temp.find('img').get('title')
+        bot.send_message(message.chat.id, text=info)
     elif(message.text == "Vladivostok"):
-        bot.send_message(message.chat.id, text="Погода в Владивосток")
+        r = requests.get(URL_WEATHER + cities[2])
+        print(r.status_code)
+        soup = BS(r.text, 'html.parser')
+
+        temp = soup.find('div', class_='current_data')
+        info = temp.find('img').get('title')
+        bot.send_message(message.chat.id, text=info)
 
 
 asyncio.run(bot.polling())
