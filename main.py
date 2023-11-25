@@ -17,22 +17,26 @@ async def parse(url):
         async with session.get(url, headers=HEADERS) as response:
             r = await aiohttp.StreamReader.read(response.content)
             soup = BS(r, 'html.parser')
+            try:
+                info_yesterday_weather = soup.find('div', 'fact__time-yesterday-wrap')
+                info_time = info_yesterday_weather.find('time', 'time fact__time')
+                info_temp = info_yesterday_weather.find('span', 'a11y-hidden')
+                itog = f'{info_time.text}{info_temp.text}\n'
+                
+                info_now_weather = soup.find('div', 'fact__temp-wrap')
+                info = info_now_weather.find('a', 'link fact__basic fact__basic_size_wide day-anchor i-bem').get('aria-label')
+                itog += f'{info}\n'
+                dop_info = soup.find('div', 'fact__props')
+                veter = dop_info.find_all('span', 'a11y-hidden')
+                for i in veter:
+                    itog += f'{i.text}\n'
 
-            info_yesterday_weather = soup.find('div', 'fact__time-yesterday-wrap')
-            info_time = info_yesterday_weather.find('time', 'time fact__time')
-            info_temp = info_yesterday_weather.find('span', 'a11y-hidden')
-            itog = f'{info_time.text}{info_temp.text}\n'
-            
-            info_now_weather = soup.find('div', 'fact__temp-wrap')
-            info = info_now_weather.find('a', 'link fact__basic fact__basic_size_wide day-anchor i-bem').get('aria-label')
-            itog += f'{info}\n'
-            dop_info = soup.find('div', 'fact__props')
-            veter = dop_info.find_all('span', 'a11y-hidden')
-            for i in veter:
-                itog += f'{i.text}\n'
+                print('parse successfully')
+                return itog 
+            except:
+                print('PARSE ERROR')
+                return 'Ошибка Чтения страницы'
 
-            print('parse successfully')
-            return itog
 
 def get_image(weather):
     for weather_item in weather_list:
